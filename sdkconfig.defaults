@@ -1,0 +1,32 @@
+# TinyUSB HID
+CONFIG_TINYUSB_HID_COUNT=1
+
+# WiFi — sobrescribe estos valores con `idf.py menuconfig` (Project Settings)
+# o creando un archivo `sdkconfig.local` (no se commitea) con tus credenciales.
+CONFIG_WIFI_SSID="your-ssid"
+CONFIG_WIFI_PASSWORD="your-password"
+
+# HTTP Server + WebSocket
+CONFIG_HTTPD_MAX_REQ_HDR_LEN=1024
+CONFIG_HTTPD_MAX_URI_LEN=512
+CONFIG_HTTPD_WS_SUPPORT=y
+
+# Stack sizes
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
+
+# Task watchdog: aumentar timeout para evitar falsos positivos
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=30
+CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU0=n
+CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU1=n
+
+# USB: deshabilitar USB-Serial/JTAG para que USB OTG funcione como dispositivo HID
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG_ENABLED=n
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+
+# Flash size: ESP32-S3-N16R8 tiene 16MB
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
+
+# Partition table custom
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"

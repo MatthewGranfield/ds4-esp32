@@ -1,0 +1,15 @@
+menu "PS4 Controller Config"
+
+    config WIFI_SSID
+        string "WiFi SSID"
+        default "mi_wifi"
+        help
+            Nombre de tu red WiFi.
+
+    config WIFI_PASSWORD
+        string "WiFi Password"
+        default "mi_password"
+        help
+            Contraseña de tu red WiFi.
+
+endmenu
