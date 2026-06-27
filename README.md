@@ -1,4 +1,4 @@
-# webpad-esp32
+# ds4-esp32
 
 Emula un mando de PS4 (DualShock 4) por USB usando un ESP32-S3, y lo controlas desde un navegador web — el propio ESP32 hostea una página con un mando virtual interactivo, joysticks arrastrables y touchpad táctil.
 
@@ -69,8 +69,8 @@ cd esp-idf
 ### 2. Clonar este repo
 
 ```bash
-git clone https://github.com/pepegocar14/webpad-esp32.git
-cd webpad-esp32
+git clone https://github.com/pepe587/ds4-esp32.git
+cd ds4-esp32
 ```
 
 ### 3. Configurar tu WiFi
@@ -148,7 +148,7 @@ I (6534) WEB: Servidor web en puerto 7777
 ## Estructura del proyecto
 
 ```
-webpad-esp32/
+ds4-esp32/
 ├── CMakeLists.txt              # Build de ESP-IDF
 ├── partitions.csv              # Tabla de particiones (factory 3 MB)
 ├── sdkconfig.defaults          # Config por defecto (WiFi placeholder)
