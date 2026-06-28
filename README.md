@@ -10,7 +10,7 @@ Pensado para situaciones donde necesitas un mando "de emergencia": una PS4 reci�
    ┌────────────┐    USB OTG    ┌─────────┐
    │  ESP32-S3  │ ────────────► │   PS4   │
    │            │   (HID DS4)   │   PS5   │
-   └─────┬──────┘                └─────────┘
+   └─────┬──────┘               └─────────┘
          │ WiFi
          ▼
    ┌────────────┐
