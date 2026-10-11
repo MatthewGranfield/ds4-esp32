@@ -362,8 +362,8 @@ void usb_hid_ds4_init(void) {
     ESP_LOGI(TAG, "USB HID listo — la PS5 ahora debería pedir 0x02/0x03/0x12/0xA3");
 }
 
-void ds4_send_report(const ds4_action_t *action) {
-    if (!tud_hid_ready()) return;
+bool ds4_send_report(const ds4_action_t *action) {
+    if (!tud_hid_ready()) return false;
 
     ds4_report_t report = {0};
     report.report_id = 0x01;
@@ -373,20 +373,13 @@ void ds4_send_report(const ds4_action_t *action) {
     report.ry = action->ry;
     report.buttons1 = (action->buttons1 & 0xF0) | (action->dpad & 0x0F);
     report.buttons2 = action->buttons2;
-    report.buttons3 = ((report_counter++ & 0x3F) << 2) | (action->buttons3 & 0x03);
+    report.buttons3 = ((report_counter & 0x3F) << 2) | (action->buttons3 & 0x03);
     report.lt = action->lt;
     report.rt = action->rt;
 
     // El report ID ya está dentro del buffer (byte 0). Pasamos 0 para que
     // TinyUSB no lo prependa otra vez (igual que hace GP2040-CE).
-    tud_hid_report(0, &report, sizeof(report));
-}
-
-void ds4_send_empty(void) {
-    ds4_action_t empty = {
-        .lx = 0x80, .ly = 0x80,
-        .rx = 0x80, .ry = 0x80,
-        .dpad = DS4_DPAD_NONE,
-    };
-    ds4_send_report(&empty);
+    if (!tud_hid_report(0, &report, sizeof(report))) return false;
+    report_counter++;
+    return true;
 }

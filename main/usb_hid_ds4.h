@@ -46,6 +46,7 @@ typedef struct {
     uint8_t rt;          // right trigger
     uint8_t reserved[54]; // gyro/accel/touchpad/relleno hasta 64 bytes
 } __attribute__((packed)) ds4_report_t;
+_Static_assert(sizeof(ds4_report_t) == 64, "Wired DS4 input report must be 64 bytes");
 
 // Accion que puede pedir la web
 typedef struct {
@@ -58,5 +59,4 @@ typedef struct {
 } ds4_action_t;
 
 void usb_hid_ds4_init(void);
-void ds4_send_report(const ds4_action_t *action);
-void ds4_send_empty(void);
+bool ds4_send_report(const ds4_action_t *action);

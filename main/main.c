@@ -74,12 +74,17 @@ static void hid_task(void *pvParam) {
     bool was_mounted   = false;
     bool was_suspended = false;
     bool was_ready     = false;
-    uint32_t hb = 0;
+    uint32_t hb = 0, queued = 0, rejected = 0, not_ready = 0;
+    TickType_t last_wake = xTaskGetTickCount();
+
+#if configTICK_RATE_HZ < 250
+#error "The HID task needs a FreeRTOS tick of 4 ms or less"
+#endif
 
     while (1) {
         bool mounted   = tud_mounted();
         bool suspended = tud_suspended();
-        bool ready     = mounted && tud_hid_ready();
+        bool ready     = mounted && !suspended && tud_hid_ready();
 
         if (mounted && !was_mounted)
             ESP_LOGI(TAG, ">>> USB MOUNT (consola enumeró) <<<");
@@ -97,14 +102,22 @@ static void hid_task(void *pvParam) {
         was_ready     = ready;
 
         if (ready) {
-            ds4_send_empty();
+            ds4_action_t snapshot;
+            web_controller_state_snapshot(&snapshot);
+            if (ds4_send_report(&snapshot)) queued++;
+            else rejected++;
+        } else {
+            not_ready++;
         }
 
-        if (++hb >= 250) {
+        if (++hb >= 1250) {
             hb = 0;
-            ESP_LOGI(TAG, "HB: mount=%d susp=%d ready=%d", mounted, suspended, ready);
+            ESP_LOGI(TAG, "HID: mount=%d susp=%d ready=%d queued=%lu rejected=%lu not_ready=%lu",
+                     mounted, suspended, ready, (unsigned long)queued,
+                     (unsigned long)rejected, (unsigned long)not_ready);
+            queued = rejected = not_ready = 0;
         }
-        vTaskDelay(pdMS_TO_TICKS(20));
+        vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(4));
     }
 }
 

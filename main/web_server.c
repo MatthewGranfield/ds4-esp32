@@ -2,6 +2,7 @@
 #include "usb_hid_ds4.h"
 #include "esp_http_server.h"
 #include "esp_log.h"
+#include "freertos/FreeRTOS.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -15,6 +16,13 @@ static ds4_action_t current_state = {
     .rx = 0x80, .ry = 0x80,
     .dpad = DS4_DPAD_NONE,
 };
+static portMUX_TYPE current_state_lock = portMUX_INITIALIZER_UNLOCKED;
+
+void web_controller_state_snapshot(ds4_action_t *out) {
+    taskENTER_CRITICAL(&current_state_lock);
+    *out = current_state;
+    taskEXIT_CRITICAL(&current_state_lock);
+}
 
 // Extrae el valor de una clave JSON string simple: {"key":"value",...}
 static bool json_get_string(const char *json, const char *key, char *out, size_t out_len) {
@@ -137,13 +145,15 @@ static esp_err_t press_handler(httpd_req_t *req) {
 
     bool hold = json_get_bool(buf, "hold");
 
+    taskENTER_CRITICAL(&current_state_lock);
     apply_button(btn, true);
-    ds4_send_report(&current_state);
+    taskEXIT_CRITICAL(&current_state_lock);
 
     if (!hold) {
         vTaskDelay(pdMS_TO_TICKS(100));
+        taskENTER_CRITICAL(&current_state_lock);
         apply_button(btn, false);
-        ds4_send_report(&current_state);
+        taskEXIT_CRITICAL(&current_state_lock);
     }
 
     ESP_LOGI(TAG, "Boton: %s hold=%d", btn, hold);
@@ -153,13 +163,14 @@ static esp_err_t press_handler(httpd_req_t *req) {
 }
 
 static esp_err_t release_handler(httpd_req_t *req) {
+    taskENTER_CRITICAL(&current_state_lock);
     memset(&current_state, 0, sizeof(current_state));
     current_state.lx = 0x80;
     current_state.ly = 0x80;
     current_state.rx = 0x80;
     current_state.ry = 0x80;
     current_state.dpad = DS4_DPAD_NONE;
-    ds4_send_report(&current_state);
+    taskEXIT_CRITICAL(&current_state_lock);
     httpd_resp_set_type(req, "application/json");
     httpd_resp_sendstr(req, "{\"ok\":true}");
     return ESP_OK;
@@ -185,6 +196,7 @@ static esp_err_t stick_handler(httpd_req_t *req) {
     if (y < 0) y = 0;
     if (y > 255) y = 255;
 
+    taskENTER_CRITICAL(&current_state_lock);
     if (side[0] == 'r') {
         current_state.rx = (uint8_t)x;
         current_state.ry = (uint8_t)y;
@@ -192,7 +204,7 @@ static esp_err_t stick_handler(httpd_req_t *req) {
         current_state.lx = (uint8_t)x;
         current_state.ly = (uint8_t)y;
     }
-    ds4_send_report(&current_state);
+    taskEXIT_CRITICAL(&current_state_lock);
     httpd_resp_set_type(req, "application/json");
     httpd_resp_sendstr(req, "{\"ok\":true}");
     return ESP_OK;
