@@ -2,7 +2,7 @@
 
 Emula un mando de PS4 (DualShock 4) por USB usando un ESP32-S3, y lo controlas desde un navegador web — el propio ESP32 hostea una página con un mando virtual interactivo, joysticks arrastrables y touchpad táctil.
 
-Pensado para situaciones donde necesitas un mando "de emergencia": una PS4 recién reseteada que pide pulsar PS para emparejar, debugging, accesibilidad, automatización, etc.
+Proyecto experimental para controlar un dispositivo HID USB desde un navegador. La compatibilidad con una PS4, especialmente durante la configuración inicial, no está demostrada.
 
 ## Cómo funciona
 
@@ -19,7 +19,7 @@ Pensado para situaciones donde necesitas un mando "de emergencia": una PS4 reci�
    └────────────┘
 ```
 
-El ESP32-S3 se presenta a la consola como un mando licenciado oficialmente (VID/PID de HORI Fighting Commander OCTA en modo PS5). Simultáneamente arranca un servidor WiFi que sirve una página con un DualShock 4 dibujado en SVG. Cuando pulsas un botón en la web, el ESP32 envía el report HID correspondiente a la consola por USB.
+El ESP32-S3 usa el VID/PID de HORI Fighting Commander OCTA en modo PS4. Esto identifica el dispositivo, pero no le aporta la autenticación del mando original. Simultáneamente arranca un servidor WiFi que sirve una página con un DualShock 4 dibujado en SVG. Cuando pulsas un botón en la web, el ESP32 envía el report HID correspondiente por USB.
 
 ## Características
 
@@ -29,14 +29,14 @@ El ESP32-S3 se presenta a la consola como un mando licenciado oficialmente (VID/
 - **Touchpad táctil**: arrastra sobre el touchpad para simular swipes
 - **L3 / R3**: tap rápido sobre un stick = clic del joystick
 - **Atajos de teclado**: ESC=○, Espacio=✕, flechas=dpad, etc.
-- **Compatible con PS4 reseteada de fábrica** (setup inicial sin mando físico)
-- **Sin claves Sony**: usa stub de autenticación → funciona ~8 minutos por sesión
+- **Entrada HID verificada en Windows**: los botones y el D-pad permanecen pulsados mientras se mantienen en la web
 
 ## Limitaciones
 
-- **PS5**: la auth RSA es estricta, la enumeración suele fallar tras unos segundos
-- **PS4**: funciona, pero la consola desconecta el mando a los ~8 minutos por timeout de auth (es suficiente para configurar la PS4; reconecta el cable para otros 8 minutos)
-- Sin claves RSA reales de Sony no se puede pasar la auth indefinidamente. Si quieres soporte permanente, GP2040-CE permite subir claves dumpeadas de un DS4 real
+- **PS4 reseteada**: probado en la pantalla «conecta un mando y pulsa PS»; la consola enumera el dispositivo y recibe informes HID, pero no avanza. No sirve actualmente para completar esa configuración.
+- **Autenticación**: las respuestas F1/F2 siguen siendo stubs, sin firma válida. Cambiar el VID/PID o responder F3 no equivale a completar la autenticación.
+- **PS4 ya configurada y PS5**: no verificadas con esta versión.
+- GP2040-CE documenta opciones de autenticación PS4 con claves o un dispositivo de autenticación por USB; este proyecto no las implementa.
 
 ## Hardware necesario
 
@@ -198,9 +198,10 @@ Si tu placa no tiene etiquetas, prueba conectando uno por uno:
 
 | Consola | Estado |
 |---------|--------|
-| PS4 reseteada (setup inicial) | ✅ Funciona ~8 min por sesión |
-| PS4 ya configurada | ✅ Funciona ~8 min por sesión |
-| PS5 | ⚠️ Enumera pero rechaza por auth estricta |
+| Windows | ✅ Entrada HID y botones verificados |
+| PS4 reseteada (setup inicial) | ❌ Enumera, pero no pasa de «conecta un mando y pulsa PS» |
+| PS4 ya configurada | Sin verificar |
+| PS5 | Sin verificar |
 
 ## Créditos y referencias
 

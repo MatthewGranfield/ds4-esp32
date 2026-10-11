@@ -74,6 +74,7 @@ static void hid_task(void *pvParam) {
     bool was_mounted   = false;
     bool was_suspended = false;
     bool was_ready     = false;
+    bool ps_sent       = false;
     uint32_t hb = 0, queued = 0, rejected = 0, not_ready = 0;
     TickType_t last_wake = xTaskGetTickCount();
 
@@ -104,8 +105,14 @@ static void hid_task(void *pvParam) {
         if (ready) {
             ds4_action_t snapshot;
             web_controller_state_snapshot(&snapshot);
-            if (ds4_send_report(&snapshot)) queued++;
-            else rejected++;
+            if (ds4_send_report(&snapshot)) {
+                queued++;
+                bool ps_now = (snapshot.buttons3 & DS4_BTN_PS) != 0;
+                if (ps_now != ps_sent) {
+                    ESP_LOGI(TAG, "USB PS button %s", ps_now ? "pressed" : "released");
+                    ps_sent = ps_now;
+                }
+            } else rejected++;
         } else {
             not_ready++;
         }
