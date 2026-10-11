@@ -203,6 +203,8 @@ Si tu placa no tiene etiquetas, prueba conectando uno por uno:
 | PS4 ya configurada | Sin verificar |
 | PS5 | Sin verificar |
 
+Para repetir la prueba en Windows, conecta el puerto USB/OTG al PC, instala `hidapi` con `pip install hidapi` y ejecuta `python tools/verify_windows_hid.py --url http://<ip-del-esp>:7777`. La prueba comprueba los informes HID y el estado del mando en Windows al mantener pulsados los botones de cara y las direcciones del D-pad.
+
 ## Créditos y referencias
 
 - **SVG del DS4**: [Dualshock 4 Layout.svg](https://commons.wikimedia.org/wiki/File:Dualshock_4_Layout.svg) por Tokyoship en Wikimedia Commons (CC BY 3.0)

@@ -14,7 +14,6 @@ import hid
 
 
 VID = 0x0F0D
-URL = "http://192.168.1.27:7777"
 CONTROLS = {
     "cross": (0x20, None),
     "circle": (0x40, None),
@@ -60,10 +59,10 @@ def joystick_state(index):
     return state.dwButtons, state.dwPOV
 
 
-def post(endpoint, payload):
+def post(url, endpoint, payload):
     body = json.dumps(payload).encode()
     request = urllib.request.Request(
-        URL + endpoint, body, {"Content-Type": "application/json"}
+        url + endpoint, body, {"Content-Type": "application/json"}
     )
     with urllib.request.urlopen(request, timeout=5) as response:
         response.read()
@@ -89,12 +88,11 @@ def sample(device, index, seconds, face_mask, hat):
 
 
 def main():
-    global URL
     parser = argparse.ArgumentParser()
-    parser.add_argument("--url", default=URL)
+    parser.add_argument("--url", required=True, help="Controller URL, e.g. http://192.168.1.50:7777")
     parser.add_argument("--pid", type=lambda value: int(value, 0), default=0x0162)
     args = parser.parse_args()
-    URL = args.url.rstrip("/")
+    url = args.url.rstrip("/")
     path = next(
         device["path"] for device in hid.enumerate(VID, args.pid)
         if device["usage_page"] == 1 and device["usage"] == 5
@@ -106,11 +104,11 @@ def main():
     print(f"Windows joystick ID {index}")
     try:
         for name, (face_mask, hat) in CONTROLS.items():
-            post("/api/release", {})
+            post(url, "/api/release", {})
             time.sleep(0.08)
             while device.read(64):
                 pass
-            post("/api/press", {"button": name, "hold": True})
+            post(url, "/api/press", {"button": name, "hold": True})
             try:
                 # Discard reports queued before the HTTP press reached the device.
                 time.sleep(0.12)
@@ -118,12 +116,12 @@ def main():
                     pass
                 total, hits, windows_hits = sample(device, index, 0.4, face_mask, hat)
             finally:
-                post("/api/release", {})
+                post(url, "/api/release", {})
             print(f"{name}: HID {hits}/{total} pressed, Windows {windows_hits} active samples")
             if total < 20 or hits < total * 0.8 or windows_hits == 0:
                 raise AssertionError(f"{name} did not stay active in HID and Windows")
     finally:
-        post("/api/release", {})
+        post(url, "/api/release", {})
         device.close()
 
 
