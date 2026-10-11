@@ -166,9 +166,7 @@ const uint8_t hid_report_descriptor[] = {
 };
 
 // ════════════════════════════════════════════════════════════════════════════
-// STRING DESCRIPTORS — usamos los de GP2040-CE (Razer Panthera licenciado)
-// VID/PID 0x1532/0x0401 (Razer Panthera) → la PS5 lo trata como mando
-// licenciado oficialmente y no exige firma RSA estricta como con DS4 real.
+// STRING DESCRIPTORS — HORI Fighting Commander OCTA en modo PS4.
 // ════════════════════════════════════════════════════════════════════════════
 const char *hid_string_descriptor[] = {
     (char[]){0x09, 0x04},                       // 0: lang English
@@ -199,11 +197,11 @@ static const tusb_desc_device_t ds4_device_descriptor = {
     .bDeviceProtocol    = 0x00,
     .bMaxPacketSize0    = 64,
     .idVendor           = 0x0F0D,   // HORI
-    .idProduct          = 0x0163,   // Fighting Commander OCTA (modo PS5)
+    .idProduct          = 0x0162,   // Fighting Commander OCTA (modo PS4)
     .bcdDevice          = 0x0100,
     .iManufacturer      = 0x01,
     .iProduct           = 0x02,
-    .iSerialNumber      = 0x00,     // sin serial → como Razer Panthera real
+    .iSerialNumber      = 0x00,
     .bNumConfigurations = 0x01,
 };
 
@@ -350,7 +348,7 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id,
 }
 
 void usb_hid_ds4_init(void) {
-    ESP_LOGI(TAG, "Iniciando USB HID (Razer Panthera PID 0x0401)");
+    ESP_LOGI(TAG, "Iniciando USB HID (HORI OCTA PS4 PID 0x0162)");
 
     tinyusb_config_t tusb_cfg = TINYUSB_DEFAULT_CONFIG();
     tusb_cfg.descriptor.device            = &ds4_device_descriptor;

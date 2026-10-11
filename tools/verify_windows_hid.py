@@ -92,7 +92,7 @@ def main():
     global URL
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", default=URL)
-    parser.add_argument("--pid", type=lambda value: int(value, 0), default=0x0163)
+    parser.add_argument("--pid", type=lambda value: int(value, 0), default=0x0162)
     args = parser.parse_args()
     URL = args.url.rstrip("/")
     path = next(
